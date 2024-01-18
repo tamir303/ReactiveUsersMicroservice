@@ -18,8 +18,6 @@ public class UserEntity {
     private String birthdate;
     private String recruitdate;
     private String[] roles;
-
-    @DBRef(lazy = true)
     private Set<DepartmentEntity> children;
 
     public UserEntity() {
