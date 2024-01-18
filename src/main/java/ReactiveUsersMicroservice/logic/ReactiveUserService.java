@@ -1,7 +1,10 @@
 package ReactiveUsersMicroservice.logic;
 
 import ReactiveUsersMicroservice.boundaries.UserBoundary;
+import ReactiveUsersMicroservice.dal.ReactiveDepartmentCrud;
 import ReactiveUsersMicroservice.dal.ReactiveUserCrud;
+import ReactiveUsersMicroservice.data.DepartmentEntity;
+import ReactiveUsersMicroservice.utils.DepartmentInvoker;
 import ReactiveUsersMicroservice.utils.GeneralUtils;
 import ReactiveUsersMicroservice.utils.exceptions.AlreadyExistException;
 import ReactiveUsersMicroservice.utils.exceptions.InvalidInputException;
@@ -19,9 +22,11 @@ import static ReactiveUsersMicroservice.utils.Constants.MINIMUM_AGE_CRITERIA;
 @Service
 public class ReactiveUserService implements UserService {
     private ReactiveUserCrud reactiveUserCrud;
+    private ReactiveDepartmentCrud reactiveDepartmentCrud;
 
-    public ReactiveUserService(ReactiveUserCrud reactiveUserCrud) {
+    public ReactiveUserService(ReactiveUserCrud reactiveUserCrud, ReactiveDepartmentCrud reactiveDepartmentCrud) {
         this.reactiveUserCrud = reactiveUserCrud;
+        this.reactiveDepartmentCrud = reactiveDepartmentCrud;
     }
 
     @Override
@@ -117,6 +122,25 @@ public class ReactiveUserService implements UserService {
         return this.reactiveUserCrud
                 .deleteAll();
     }
+
+    @Override
+    public Mono<Void> bindUserToDepartment(String email, DepartmentInvoker departmentInvoker) {
+        return reactiveUserCrud.existsById(email)
+                .flatMap(exists -> {
+                    if (exists) {
+                        return reactiveUserCrud.findById(email)
+                                .flatMap(foundUser -> reactiveDepartmentCrud.findById(departmentInvoker.getDeptId())
+                                        .flatMap(departmentEntity -> {
+                                            foundUser.addChild(departmentEntity);
+                                            return reactiveUserCrud.save(foundUser).then();
+                                        })
+                                );
+                    } else {
+                        return Mono.error(new NotFoundException("User with email: " + email + " does not exist"));
+                    }
+                });
+    }
+
 
     private void isValidUser(UserBoundary user) {
          UserUtils.isValidEmail(user.getEmail());

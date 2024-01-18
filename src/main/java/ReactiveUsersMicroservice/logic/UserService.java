@@ -1,6 +1,7 @@
 package ReactiveUsersMicroservice.logic;
 
 import ReactiveUsersMicroservice.boundaries.UserBoundary;
+import ReactiveUsersMicroservice.utils.DepartmentInvoker;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -13,4 +14,5 @@ public interface UserService {
     public Flux<UserBoundary> getUsersByLastName(String lastName);
     public Flux<UserBoundary> getUsersByMinimumAge(String minimumAgeInYears);
     public Mono<Void> deleteAllUsers();
+    Mono<Void> bindUserToDepartment(String email, DepartmentInvoker departmentInvoker);
 }

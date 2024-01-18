@@ -3,6 +3,7 @@ package ReactiveUsersMicroservice.controllers;
 import ReactiveUsersMicroservice.boundaries.UserBoundary;
 import ReactiveUsersMicroservice.logic.ReactiveUserService;
 import ReactiveUsersMicroservice.logic.UserService;
+import ReactiveUsersMicroservice.utils.DepartmentInvoker;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -52,6 +53,14 @@ public class UserController {
         return this.userService
                 .getUsersByCriteria(criteria, value)
                 .log();
+    }
+
+    @PutMapping(
+            path = "/{email}/department",
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<Void> bindingUserToDepartment(@PathVariable(name = "email") String email,@RequestBody DepartmentInvoker departmentInvoker) {
+        return this.userService.bindUserToDepartment(email, departmentInvoker);
+
     }
 
     @DeleteMapping
