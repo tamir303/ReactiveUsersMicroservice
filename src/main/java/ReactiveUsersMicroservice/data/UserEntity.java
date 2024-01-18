@@ -23,7 +23,7 @@ public class UserEntity {
     private Set<DepartmentEntity> children;
 
     public UserEntity() {
-        this.children = new TreeSet<>();
+        this.children = new HashSet<>();
     }
 
     public UserEntity(String email, String password, String first, String last, String birthdate, String recruitdate, String[] roles, Set<DepartmentEntity> departmentEntities) {
@@ -43,21 +43,6 @@ public class UserEntity {
 
     public Set<DepartmentEntity> getChildren() {
         return children;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserEntity that = (UserEntity) o;
-        return Objects.equals(email, that.email) && Objects.equals(password, that.password) && Objects.equals(first, that.first) && Objects.equals(last, that.last) && Objects.equals(birthdate, that.birthdate) && Objects.equals(recruitdate, that.recruitdate) && Arrays.equals(roles, that.roles) && Objects.equals(children, that.children);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(email, password, first, last, birthdate, recruitdate, children);
-        result = 31 * result + Arrays.hashCode(roles);
-        return result;
     }
 
     public void setChildren(Set<DepartmentEntity> children) {
