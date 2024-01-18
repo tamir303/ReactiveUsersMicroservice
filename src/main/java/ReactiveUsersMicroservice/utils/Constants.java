@@ -8,4 +8,5 @@ public class Constants {
     public static final String DOMAIN_CRITERIA = "byDomain";
     public static final String LAST_NAME_CRITERIA = "byLastname";
     public static final String MINIMUM_AGE_CRITERIA = "byMinimumAge";
+    public static final String DEPARTMENT_CRITERIA = "byDepartmentId";
 }

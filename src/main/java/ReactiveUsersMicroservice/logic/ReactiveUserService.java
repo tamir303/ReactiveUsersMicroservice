@@ -14,9 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ReactiveUsersMicroservice.utils.UserUtils;
 
-import static ReactiveUsersMicroservice.utils.Constants.DOMAIN_CRITERIA;
-import static ReactiveUsersMicroservice.utils.Constants.LAST_NAME_CRITERIA;
-import static ReactiveUsersMicroservice.utils.Constants.MINIMUM_AGE_CRITERIA;
+import static ReactiveUsersMicroservice.utils.Constants.*;
 
 
 @Service
@@ -92,6 +90,9 @@ public class ReactiveUserService implements UserService {
             case (MINIMUM_AGE_CRITERIA) -> {
                 return this.getUsersByMinimumAge(value);
             }
+            case (DEPARTMENT_CRITERIA) -> {
+                return this.getUsersByDepartment(value);
+            }
             default -> {
                 return Flux.error(new InvalidInputException("Invalid criteria: " + criteria));
             }
@@ -115,6 +116,17 @@ public class ReactiveUserService implements UserService {
         return this.reactiveUserCrud.findAll()
                 .map(UserBoundary::new)
                 .filter(user -> UserUtils.isOlderThan(user.getBirthdate(), minimumAgeInYears));
+    }
+
+    @Override
+    public Flux<UserBoundary> getUsersByDepartment(String deptId) {
+        return this.reactiveUserCrud.findAll()
+                .flatMap(userEntity ->
+                        Flux.fromIterable(userEntity.getChildren())
+                                .map(DepartmentEntity::getDeptId)
+                                .filter(deptId::equals)
+                                .map(deptIdMatched -> new UserBoundary(userEntity))
+                );
     }
 
     @Override

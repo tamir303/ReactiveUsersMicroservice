@@ -13,6 +13,7 @@ public interface UserService {
     public Flux<UserBoundary> getUsersByDomain(String domain);
     public Flux<UserBoundary> getUsersByLastName(String lastName);
     public Flux<UserBoundary> getUsersByMinimumAge(String minimumAgeInYears);
+    public Flux<UserBoundary> getUsersByDepartment(String deptId);
     public Mono<Void> deleteAllUsers();
     Mono<Void> bindUserToDepartment(String email, DepartmentInvoker departmentInvoker);
 }
