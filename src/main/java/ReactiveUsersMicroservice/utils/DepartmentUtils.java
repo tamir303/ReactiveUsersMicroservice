@@ -20,13 +20,6 @@ public class DepartmentUtils {
         throw new InvalidInputException("Invalid departmentName %s".formatted(departmentName));
     }
 
-    public static void isValidCreationDate(String creationDate) {
-        if(GeneralUtils.notNullOrEmpty(creationDate) && GeneralUtils.isValidDateFormat(creationDate))
-            return;
-
-        throw new InvalidInputException("Invalid creationDate %s".formatted(creationDate));
-    }
-
     public static String localDateToFormattedString() {
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT);

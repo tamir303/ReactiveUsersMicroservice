@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@RestController("/users")
+@RestController()
+@RequestMapping(path = "/users")
+
 public class UserController {
     private UserService userService;
 

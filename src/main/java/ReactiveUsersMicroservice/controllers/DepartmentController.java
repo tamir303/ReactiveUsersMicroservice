@@ -1,6 +1,7 @@
 package ReactiveUsersMicroservice.controllers;
 
 import ReactiveUsersMicroservice.boundaries.DepartmentBoundary;
+import ReactiveUsersMicroservice.boundaries.NewDepartmentBoundary;
 import ReactiveUsersMicroservice.logic.DepartmentService;
 import ReactiveUsersMicroservice.logic.ReactiveDepartmentService;
 import org.springframework.http.MediaType;
@@ -9,7 +10,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
-@RestController("/departments")
+@RestController()
+@RequestMapping(path = "/departments")
+
 public class DepartmentController {
     private DepartmentService departmentService;
 
@@ -20,7 +23,7 @@ public class DepartmentController {
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<DepartmentBoundary> createDepartment(@RequestBody DepartmentBoundary newDepartment) {
+    public Mono<DepartmentBoundary> createDepartment(@RequestBody NewDepartmentBoundary newDepartment) {
         return this.departmentService
                 .createDepartment(newDepartment);
     }

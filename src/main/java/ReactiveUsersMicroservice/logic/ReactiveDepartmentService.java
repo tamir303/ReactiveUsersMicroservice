@@ -1,6 +1,7 @@
 package ReactiveUsersMicroservice.logic;
 
 import ReactiveUsersMicroservice.boundaries.DepartmentBoundary;
+import ReactiveUsersMicroservice.boundaries.NewDepartmentBoundary;
 import ReactiveUsersMicroservice.boundaries.UserBoundary;
 import ReactiveUsersMicroservice.dal.ReactiveDepartmentCrud;
 import ReactiveUsersMicroservice.utils.DepartmentUtils;
@@ -22,7 +23,7 @@ public class ReactiveDepartmentService implements DepartmentService{
         this.reactiveDepartmentCrud = reactiveDepartmentCrud;
     }
     @Override
-    public Mono<DepartmentBoundary> createDepartment(DepartmentBoundary newDepartment) {
+    public Mono<DepartmentBoundary> createDepartment(NewDepartmentBoundary newDepartment) {
         isValidDepartment(newDepartment);
 
         return this.reactiveDepartmentCrud.existsById(newDepartment.getDeptId()).flatMap(exists -> {
@@ -31,8 +32,9 @@ public class ReactiveDepartmentService implements DepartmentService{
                 return Mono.error(new AlreadyExistException("Department with deptId: " + newDepartment.getDeptId() + " already exists"));
             } else {
                 // Else, save the user and return it
-                newDepartment.setCreationDate(localDateToFormattedString());
-                return Mono.just(newDepartment)
+                DepartmentBoundary departmentBoundary = new DepartmentBoundary(newDepartment);
+                departmentBoundary.setCreationDate(localDateToFormattedString());
+                return Mono.just(departmentBoundary)
                         .map(DepartmentBoundary::toEntity)
                         .flatMap(this.reactiveDepartmentCrud::save)
                         .map(DepartmentBoundary::new);
@@ -75,9 +77,8 @@ public class ReactiveDepartmentService implements DepartmentService{
                 .deleteAll();
     }
 
-    private void isValidDepartment(DepartmentBoundary department) {
+    private void isValidDepartment(NewDepartmentBoundary department) {
         DepartmentUtils.isValidDeptId(department.getDeptId());
         DepartmentUtils.isValidDepartmentName(department.getDepartmentName());
-        DepartmentUtils.isValidCreationDate(department.getCreationDate());
     }
 }

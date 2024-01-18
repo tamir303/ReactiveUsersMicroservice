@@ -8,9 +8,15 @@ public class DepartmentBoundary {
     private String departmentName;
     private String creationDate;
 
-    public DepartmentBoundary(String deptId, String departmentName) {
+    public DepartmentBoundary(NewDepartmentBoundary newDepartmentBoundary) {
+        this.deptId = newDepartmentBoundary.getDeptId();
+        this.departmentName = newDepartmentBoundary.getDepartmentName();
+    }
+
+    public DepartmentBoundary(String deptId, String departmentName, String creationDate) {
         this.deptId = deptId;
         this.departmentName = departmentName;
+        this.creationDate = creationDate;
     }
 
     public DepartmentBoundary(DepartmentEntity entity) {
