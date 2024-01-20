@@ -25,7 +25,8 @@ public class DepartmentController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<DepartmentBoundary> createDepartment(@RequestBody NewDepartmentBoundary newDepartment) {
         return this.departmentService
-                .createDepartment(newDepartment);
+                .createDepartment(newDepartment)
+                .log();
     }
 
     @GetMapping(
@@ -51,6 +52,5 @@ public class DepartmentController {
         return this.departmentService
                 .deleteAllDepartments()
                 .log();
-
     }
 }

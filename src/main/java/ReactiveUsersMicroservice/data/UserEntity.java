@@ -1,11 +1,8 @@
 package ReactiveUsersMicroservice.data;
 
-import ReactiveUsersMicroservice.utils.DepartmentInvoker;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Document(collection = "users")

@@ -1,7 +1,7 @@
 package ReactiveUsersMicroservice.logic;
 
 import ReactiveUsersMicroservice.boundaries.UserBoundary;
-import ReactiveUsersMicroservice.utils.DepartmentInvoker;
+import ReactiveUsersMicroservice.utils.invokers.DepartmentInvoker;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

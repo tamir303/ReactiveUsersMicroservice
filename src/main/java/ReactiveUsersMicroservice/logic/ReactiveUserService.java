@@ -4,7 +4,7 @@ import ReactiveUsersMicroservice.boundaries.UserBoundary;
 import ReactiveUsersMicroservice.dal.ReactiveDepartmentCrud;
 import ReactiveUsersMicroservice.dal.ReactiveUserCrud;
 import ReactiveUsersMicroservice.data.DepartmentEntity;
-import ReactiveUsersMicroservice.utils.DepartmentInvoker;
+import ReactiveUsersMicroservice.utils.invokers.DepartmentInvoker;
 import ReactiveUsersMicroservice.utils.GeneralUtils;
 import ReactiveUsersMicroservice.utils.exceptions.AlreadyExistException;
 import ReactiveUsersMicroservice.utils.exceptions.InvalidInputException;
@@ -120,13 +120,9 @@ public class ReactiveUserService implements UserService {
 
     @Override
     public Flux<UserBoundary> getUsersByDepartment(String deptId) {
-        return this.reactiveUserCrud.findAll()
-                .flatMap(userEntity ->
-                        Flux.fromIterable(userEntity.getChildren())
-                                .map(DepartmentEntity::getDeptId)
-                                .filter(deptId::equals)
-                                .map(deptIdMatched -> new UserBoundary(userEntity))
-                );
+        return this.reactiveDepartmentCrud.findById(deptId)
+                .flatMapMany(department -> this.reactiveUserCrud.findAllByChildrenContaining(department)
+                        .map(UserBoundary::new));
     }
 
     @Override
@@ -140,14 +136,18 @@ public class ReactiveUserService implements UserService {
         return reactiveUserCrud.existsById(email)
                 .flatMap(exists -> {
                     if (exists) {
+                        // User exists, bind the user to the department
+                        String departmentId = departmentInvoker.getDepartment().getDeptId();
                         return reactiveUserCrud.findById(email)
-                                .flatMap(foundUser -> reactiveDepartmentCrud.findById(departmentInvoker.getDeptId())
-                                        .flatMap(departmentEntity -> {
-                                            foundUser.addChild(departmentEntity);
+                                .flatMap(foundUser -> reactiveDepartmentCrud.findById(departmentId)
+                                        .flatMap(foundDepartment -> {
+                                            // Found department and user, bind them
+                                            foundUser.addChild(foundDepartment);
                                             return reactiveUserCrud.save(foundUser).then();
                                         })
                                 );
                     } else {
+                        // User does not exist, throw an exception
                         return Mono.error(new NotFoundException("User with email: " + email + " does not exist"));
                     }
                 });
