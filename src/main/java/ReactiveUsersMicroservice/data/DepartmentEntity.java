@@ -2,6 +2,7 @@ package ReactiveUsersMicroservice.data;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -14,6 +15,7 @@ public class DepartmentEntity {
     private String deptId;
     private String departmentName;
     private String creationDate;
+    @DocumentReference(lazy = true)
     private Set<UserEntity> parents;
 
     public DepartmentEntity() {this.parents = new HashSet<>();}

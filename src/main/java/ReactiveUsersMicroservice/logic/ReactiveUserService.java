@@ -5,6 +5,7 @@ import ReactiveUsersMicroservice.boundaries.UserBoundary;
 import ReactiveUsersMicroservice.dal.ReactiveDepartmentCrud;
 import ReactiveUsersMicroservice.dal.ReactiveUserCrud;
 import ReactiveUsersMicroservice.data.DepartmentEntity;
+import ReactiveUsersMicroservice.data.UserEntity;
 import ReactiveUsersMicroservice.utils.invokers.DepartmentInvoker;
 import ReactiveUsersMicroservice.utils.GeneralUtils;
 import ReactiveUsersMicroservice.utils.exceptions.AlreadyExistException;
@@ -147,24 +148,23 @@ public class ReactiveUserService implements UserService {
 
     @Override
     public Mono<Void> bindUserToDepartment(String email, DepartmentInvoker departmentInvoker) {
-        return reactiveUserCrud.findById(email)
-                .flatMap(existedUser -> {
-                    if (existedUser != null) {
-                        // User exists, bind the user to the department
-                        String departmentId = departmentInvoker.getDepartment().getDeptId();
-                        return reactiveDepartmentCrud.findById(departmentId)
-                                .flatMap(foundDepartment -> {
-                                    existedUser.addChild(foundDepartment);
-                                    reactiveUserCrud.save(existedUser).then();
-                                    foundDepartment.addParent(existedUser);
-                                    return reactiveDepartmentCrud.save(foundDepartment).then();
-                                });
-                    } else {
-                        // User does not exist, throw an exception
-                        return Mono.error(new NotFoundException("User with email: " + email + " does not exist"));
-                    }
+        Mono<DepartmentEntity> monoDep = reactiveDepartmentCrud.findById(departmentInvoker.getDepartment().getDeptId());
+        Mono<UserEntity> monoUser = reactiveUserCrud.findById(email);
+
+        return monoUser.flatMap(existedUser -> {
+            if (existedUser != null) {
+                return monoDep.flatMap(foundDepartment -> {
+                    existedUser.addChild(foundDepartment);
+                    foundDepartment.addParent(existedUser);
+                    // Save both the user and the department
+                    return reactiveUserCrud.save(existedUser).then(reactiveDepartmentCrud.save(foundDepartment).then());
                 });
+            } else {
+                return Mono.error(new NotFoundException("User with email: " + email + " does not exist"));
+            }
+        });
     }
+
 
     private void isValidUser(UserBoundary user) {
         UserUtils.isValidEmail(user.getEmail());

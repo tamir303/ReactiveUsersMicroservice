@@ -2,6 +2,7 @@ package ReactiveUsersMicroservice.data;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.*;
 
@@ -15,6 +16,7 @@ public class UserEntity {
     private String birthdate;
     private String recruitdate;
     private String[] roles;
+    @DocumentReference(lazy = true)
     private Set<DepartmentEntity> children;
 
     public UserEntity() {
