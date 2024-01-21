@@ -20,9 +20,13 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+	// Security
+	implementation 'org.mindrot:jbcrypt:0.4'
+
 	// Swagger-UI
 	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.3.0'
 
+	// Testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
 }

@@ -6,6 +6,7 @@ import ReactiveUsersMicroservice.dal.ReactiveDepartmentCrud;
 import ReactiveUsersMicroservice.dal.ReactiveUserCrud;
 import ReactiveUsersMicroservice.data.DepartmentEntity;
 import ReactiveUsersMicroservice.data.UserEntity;
+import ReactiveUsersMicroservice.utils.CryptoUtils;
 import ReactiveUsersMicroservice.utils.invokers.DepartmentInvoker;
 import ReactiveUsersMicroservice.utils.GeneralUtils;
 import ReactiveUsersMicroservice.utils.exceptions.AlreadyExistException;
@@ -43,6 +44,7 @@ public class ReactiveUserService implements UserService {
                 // Else, save the user and return it
                 return Mono.just(user)
                         .map(UserBoundary::toEntity)
+                        .map(this::hashPassword)
                         .flatMap(this.reactiveUserCrud::save)
                         .map(UserBoundary::new);
             }
@@ -51,26 +53,15 @@ public class ReactiveUserService implements UserService {
 
     @Override
     public Mono<UserBoundary> getUser(String email, String password) {
-        return this.reactiveUserCrud.existsById(email)
-                .flatMap(exists -> {
-                    if (exists) {
-                        // User exists, check if the password is correct
-                        return this.reactiveUserCrud.findById(email)
-                                .flatMap(foundUser -> {
-                                    if (foundUser.getPassword().equals(password)) {
-                                        // Password is correct, return the user
-                                        return Mono.just(foundUser)
-                                                .map(UserBoundary::new);
-                                    } else {
-                                        // Password is incorrect throw an exception
-                                        return Mono.error(new InvalidInputException("Password is incorrect"));
-                                    }
-                                });
-                    } else {
-                        //  User does not exist, throw an exception
-                        return Mono.error(new NotFoundException("User with email: " + email + " does not exist"));
-                    }
-                });
+        return this.reactiveUserCrud.findById(email)
+                .switchIfEmpty(Mono.error(new NotFoundException("User with email: " + email + " does not exist")))
+                .flatMap(foundUser ->
+                        verifyPassword(password, foundUser.getPassword()) // Verify the password
+                                .filter(passwordsMatch -> passwordsMatch) // If the passwords match, return the user
+                                .switchIfEmpty(Mono.error(new InvalidInputException("Password is incorrect")))
+                                .thenReturn(foundUser)
+                )
+                .map(UserBoundary::new);
     }
 
     @Override
@@ -134,42 +125,29 @@ public class ReactiveUserService implements UserService {
         return reactiveUserCrud
                 .findAll()
                 .flatMap(user -> {
-                    // Remove users from parents set of departments
+                    // Remove the user from all departments in which he is a parent
                     Set<DepartmentEntity> children = user.getChildren();
-
-                    // Create a Flux of department updates
                     Flux<DepartmentEntity> departmentUpdates = Flux.fromIterable(children)
-                            .flatMap(department -> {
-                                department.getParents().remove(user);
-                                // Save the updated department asynchronously
-                                return reactiveDepartmentCrud.save(department);
-                            });
+                            .doOnNext(department -> department.getParents().remove(user))
+                            .flatMap(reactiveDepartmentCrud::save);
 
-                    // Use thenMany to wait for the department updates to complete
-                    return departmentUpdates.thenMany(reactiveUserCrud.deleteById(user.getEmail()));
+                    return Flux.concat(departmentUpdates, reactiveUserCrud.deleteById(user.getEmail()));
                 })
                 .then();
     }
 
+
     @Override
     public Mono<Void> bindUserToDepartment(String email, DepartmentInvoker departmentInvoker) {
-        Mono<DepartmentEntity> monoDep = reactiveDepartmentCrud.findById(departmentInvoker.getDepartment().getDeptId());
-        Mono<UserEntity> monoUser = reactiveUserCrud.findById(email);
-
-        return monoUser.flatMap(existedUser -> {
-            if (existedUser != null) {
-                return monoDep.flatMap(foundDepartment -> {
-                    existedUser.addChild(foundDepartment);
-                    foundDepartment.addParent(existedUser);
-                    // Save both the user and the department
-                    return reactiveUserCrud.save(existedUser).then(reactiveDepartmentCrud.save(foundDepartment).then());
-                });
-            } else {
-                return Mono.error(new NotFoundException("User with email: " + email + " does not exist"));
-            }
-        });
+        return reactiveUserCrud.findById(email)
+                .switchIfEmpty(Mono.error(new NotFoundException("User with email: " + email + " does not exist")))
+                .flatMap(existedUser -> reactiveDepartmentCrud.findById(departmentInvoker.getDepartment().getDeptId())
+                        .flatMap(foundDepartment -> {
+                            existedUser.addChild(foundDepartment);
+                            foundDepartment.addParent(existedUser);
+                            return reactiveUserCrud.save(existedUser).then(reactiveDepartmentCrud.save(foundDepartment));
+                        })).then();
     }
-
 
     private void isValidUser(UserBoundary user) {
         UserUtils.isValidEmail(user.getEmail());
@@ -178,5 +156,16 @@ public class ReactiveUserService implements UserService {
         UserUtils.isValidPassword(user.getPassword());
         UserUtils.isValidName(user.getName().getFirst());
         UserUtils.isValidName(user.getName().getLast());
+    }
+
+    private UserEntity hashPassword(UserEntity user) {
+        CryptoUtils.hashPassword(user.getPassword())
+                .subscribe(user::setPassword);
+
+        return user;
+    }
+
+    private Mono<Boolean> verifyPassword(String plainPassword, String hashedPassword) {
+        return CryptoUtils.checkPassword(plainPassword, hashedPassword);
     }
 }
