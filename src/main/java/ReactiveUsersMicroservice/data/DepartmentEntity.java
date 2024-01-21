@@ -3,6 +3,10 @@ package ReactiveUsersMicroservice.data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 @Document(collection = "departments")
 public class DepartmentEntity {
 
@@ -10,14 +14,15 @@ public class DepartmentEntity {
     private String deptId;
     private String departmentName;
     private String creationDate;
+    private Set<UserEntity> parents;
 
-    public DepartmentEntity() {
-    }
+    public DepartmentEntity() {this.parents = new HashSet<>();}
 
-    public DepartmentEntity(String deptId, String departmentName, String creationDate) {
+    public DepartmentEntity(String deptId, String departmentName, String creationDate, Set<UserEntity> parents) {
         this.deptId = deptId;
         this.departmentName = departmentName;
         this.creationDate = creationDate;
+        this.parents = parents;
     }
 
 
@@ -45,6 +50,18 @@ public class DepartmentEntity {
         this.creationDate = creationDate;
     }
 
+    public Set<UserEntity> getParents() {
+        return parents;
+    }
+
+    public void setParents(Set<UserEntity> parents) {
+        this.parents = parents;
+    }
+
+    public void addParent(UserEntity userEntity) {
+        this.parents.add(userEntity);
+    }
+
     @Override
     public String toString() {
         return "DepartmentEntity{" +
@@ -52,6 +69,19 @@ public class DepartmentEntity {
                 ", departmentName='" + departmentName + '\'' +
                 ", creationDate='" + creationDate + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DepartmentEntity that = (DepartmentEntity) o;
+        return Objects.equals(deptId, that.deptId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(deptId);
     }
 }
 

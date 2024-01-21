@@ -1,5 +1,6 @@
 package ReactiveUsersMicroservice.logic;
 
+import ReactiveUsersMicroservice.boundaries.DepartmentBoundary;
 import ReactiveUsersMicroservice.boundaries.UserBoundary;
 import ReactiveUsersMicroservice.dal.ReactiveDepartmentCrud;
 import ReactiveUsersMicroservice.dal.ReactiveUserCrud;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ReactiveUsersMicroservice.utils.UserUtils;
+
+import java.util.Set;
 
 import static ReactiveUsersMicroservice.utils.Constants.*;
 
@@ -49,24 +52,24 @@ public class ReactiveUserService implements UserService {
     public Mono<UserBoundary> getUser(String email, String password) {
         return this.reactiveUserCrud.existsById(email)
                 .flatMap(exists -> {
-                if (exists) {
-                    // User exists, check if the password is correct
-                    return this.reactiveUserCrud.findById(email)
-                            .flatMap(foundUser -> {
-                                if (foundUser.getPassword().equals(password)) {
-                                    // Password is correct, return the user
-                                    return Mono.just(foundUser)
-                                            .map(UserBoundary::new);
-                                } else {
-                                    // Password is incorrect throw an exception
-                                    return Mono.error(new InvalidInputException("Password is incorrect"));
-                                }
-                            });
-                } else {
-                    //  User does not exist, throw an exception
-                    return Mono.error(new NotFoundException("User with email: " + email + " does not exist"));
-                }
-        });
+                    if (exists) {
+                        // User exists, check if the password is correct
+                        return this.reactiveUserCrud.findById(email)
+                                .flatMap(foundUser -> {
+                                    if (foundUser.getPassword().equals(password)) {
+                                        // Password is correct, return the user
+                                        return Mono.just(foundUser)
+                                                .map(UserBoundary::new);
+                                    } else {
+                                        // Password is incorrect throw an exception
+                                        return Mono.error(new InvalidInputException("Password is incorrect"));
+                                    }
+                                });
+                    } else {
+                        //  User does not exist, throw an exception
+                        return Mono.error(new NotFoundException("User with email: " + email + " does not exist"));
+                    }
+                });
     }
 
     @Override
@@ -127,25 +130,41 @@ public class ReactiveUserService implements UserService {
 
     @Override
     public Mono<Void> deleteAllUsers() {
-        return this.reactiveUserCrud
-                .deleteAll();
+        return reactiveUserCrud
+                .findAll()
+                .flatMap(user -> {
+                    // Remove users from parents set of departments
+                    Set<DepartmentEntity> children = user.getChildren();
+                    children.forEach(department -> department.getParents().remove(user));
+
+                    // Delete the user
+                    return reactiveUserCrud.deleteById(user.getEmail());
+                })
+                .then();
+//        return this.reactiveUserCrud
+//                .deleteAll();
     }
 
     @Override
     public Mono<Void> bindUserToDepartment(String email, DepartmentInvoker departmentInvoker) {
-        return reactiveUserCrud.existsById(email)
-                .flatMap(exists -> {
-                    if (exists) {
+        System.err.println(departmentInvoker);
+        System.err.println(email);
+        return reactiveUserCrud.findById(email)
+                .flatMap(existedUser -> {
+                    if (existedUser != null) {
                         // User exists, bind the user to the department
                         String departmentId = departmentInvoker.getDepartment().getDeptId();
-                        return reactiveUserCrud.findById(email)
-                                .flatMap(foundUser -> reactiveDepartmentCrud.findById(departmentId)
-                                        .flatMap(foundDepartment -> {
-                                            // Found department and user, bind them
-                                            foundUser.addChild(foundDepartment);
-                                            return reactiveUserCrud.save(foundUser).then();
-                                        })
-                                );
+                        return reactiveDepartmentCrud.findById(departmentId)
+                                .flatMap(foundDepartment -> {
+                                    System.err.println("here");
+                                    existedUser.addChild(foundDepartment);
+                                    foundDepartment.addParent(existedUser);
+                                    System.err.println(foundDepartment.getParents().size());
+                                    System.err.println(existedUser.getChildren().size());
+                                    System.err.println(foundDepartment);
+                                    reactiveDepartmentCrud.save(foundDepartment).block();
+                                    return reactiveUserCrud.save(existedUser).then();
+                                });
                     } else {
                         // User does not exist, throw an exception
                         return Mono.error(new NotFoundException("User with email: " + email + " does not exist"));
@@ -153,13 +172,12 @@ public class ReactiveUserService implements UserService {
                 });
     }
 
-
     private void isValidUser(UserBoundary user) {
-         UserUtils.isValidEmail(user.getEmail());
-         UserUtils.isValidDate(user.getBirthdate());
-         UserUtils.isValidDate(user.getRecruitdate());
-         UserUtils.isValidPassword(user.getPassword());
-         UserUtils.isValidName(user.getName().getFirst());
-         UserUtils.isValidName(user.getName().getLast());
+        UserUtils.isValidEmail(user.getEmail());
+        UserUtils.isValidDate(user.getBirthdate());
+        UserUtils.isValidDate(user.getRecruitdate());
+        UserUtils.isValidPassword(user.getPassword());
+        UserUtils.isValidName(user.getName().getFirst());
+        UserUtils.isValidName(user.getName().getLast());
     }
 }
