@@ -74,13 +74,11 @@ public class ReactiveDepartmentService implements DepartmentService{
                 .flatMap(department -> {
                     // Remove the department from all users in which he is a child
                     Set<UserEntity> parents = department.getParents();
-                    Flux<UserEntity> userUpdates = Flux.fromIterable(parents)
+                    return Flux.fromIterable(parents)
                             .doOnNext(user -> user.getChildren().remove(department))
                             .flatMap(reactiveUserCrud::save);
-
-                    return Flux.concat(userUpdates, reactiveDepartmentCrud.deleteById(department.getDeptId()));
                 })
-                .then();
+                .then(reactiveDepartmentCrud.deleteAll());
     }
 
     private void isValidDepartment(NewDepartmentBoundary department) {

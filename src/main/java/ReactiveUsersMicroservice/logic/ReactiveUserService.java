@@ -127,13 +127,11 @@ public class ReactiveUserService implements UserService {
                 .flatMap(user -> {
                     // Remove the user from all departments in which he is a parent
                     Set<DepartmentEntity> children = user.getChildren();
-                    Flux<DepartmentEntity> departmentUpdates = Flux.fromIterable(children)
+                    return Flux.fromIterable(children)
                             .doOnNext(department -> department.getParents().remove(user))
                             .flatMap(reactiveDepartmentCrud::save);
-
-                    return Flux.concat(departmentUpdates, reactiveUserCrud.deleteById(user.getEmail()));
                 })
-                .then();
+                .then(reactiveUserCrud.deleteAll());
     }
 
 
