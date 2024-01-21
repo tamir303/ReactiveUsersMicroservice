@@ -147,8 +147,6 @@ public class ReactiveUserService implements UserService {
 
     @Override
     public Mono<Void> bindUserToDepartment(String email, DepartmentInvoker departmentInvoker) {
-        System.err.println(departmentInvoker);
-        System.err.println(email);
         return reactiveUserCrud.findById(email)
                 .flatMap(existedUser -> {
                     if (existedUser != null) {
@@ -156,14 +154,10 @@ public class ReactiveUserService implements UserService {
                         String departmentId = departmentInvoker.getDepartment().getDeptId();
                         return reactiveDepartmentCrud.findById(departmentId)
                                 .flatMap(foundDepartment -> {
-                                    System.err.println("here");
                                     existedUser.addChild(foundDepartment);
+                                    reactiveUserCrud.save(existedUser).then();
                                     foundDepartment.addParent(existedUser);
-                                    System.err.println(foundDepartment.getParents().size());
-                                    System.err.println(existedUser.getChildren().size());
-                                    System.err.println(foundDepartment);
-                                    reactiveDepartmentCrud.save(foundDepartment).block();
-                                    return reactiveUserCrud.save(existedUser).then();
+                                    return reactiveDepartmentCrud.save(foundDepartment).then();
                                 });
                     } else {
                         // User does not exist, throw an exception
