@@ -136,14 +136,19 @@ public class ReactiveUserService implements UserService {
                 .flatMap(user -> {
                     // Remove users from parents set of departments
                     Set<DepartmentEntity> children = user.getChildren();
-                    children.forEach(department -> department.getParents().remove(user));
 
-                    // Delete the user
-                    return reactiveUserCrud.deleteById(user.getEmail());
+                    // Create a Flux of department updates
+                    Flux<DepartmentEntity> departmentUpdates = Flux.fromIterable(children)
+                            .flatMap(department -> {
+                                department.getParents().remove(user);
+                                // Save the updated department asynchronously
+                                return reactiveDepartmentCrud.save(department);
+                            });
+
+                    // Use thenMany to wait for the department updates to complete
+                    return departmentUpdates.thenMany(reactiveUserCrud.deleteById(user.getEmail()));
                 })
                 .then();
-//        return this.reactiveUserCrud
-//                .deleteAll();
     }
 
     @Override
