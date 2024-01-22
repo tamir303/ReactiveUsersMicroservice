@@ -11,5 +11,5 @@ public interface ReactiveUserCrud extends ReactiveMongoRepository<UserEntity, St
 
     public Flux<UserEntity> findAllByLastEqualsIgnoreCase(@Param("lastName") String lastName);
 
-    public Flux<UserEntity> findAllByChildrenContaining(DepartmentEntity child);
+    public Flux<UserEntity> findAllByChildrenIdsContaining(String deptId);
 }

@@ -111,9 +111,8 @@ public class ReactiveUserService implements UserService {
 
     @Override
     public Flux<UserBoundary> getUsersByDepartment(String deptId) {
-        return this.reactiveDepartmentCrud.findById(deptId)
-                .flatMapMany(department -> this.reactiveUserCrud.findAllByChildrenContaining(department)
-                        .map(UserBoundary::new));
+        return this.reactiveUserCrud.findAllByChildrenIdsContaining(deptId)
+                .map(UserBoundary::new);
     }
 
     @Override
