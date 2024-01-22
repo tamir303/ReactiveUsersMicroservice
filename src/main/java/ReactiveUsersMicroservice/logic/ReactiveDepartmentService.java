@@ -2,11 +2,8 @@ package ReactiveUsersMicroservice.logic;
 
 import ReactiveUsersMicroservice.boundaries.DepartmentBoundary;
 import ReactiveUsersMicroservice.boundaries.NewDepartmentBoundary;
-import ReactiveUsersMicroservice.boundaries.UserBoundary;
 import ReactiveUsersMicroservice.dal.ReactiveDepartmentCrud;
 import ReactiveUsersMicroservice.dal.ReactiveUserCrud;
-import ReactiveUsersMicroservice.data.DepartmentEntity;
-import ReactiveUsersMicroservice.data.UserEntity;
 import ReactiveUsersMicroservice.utils.DepartmentUtils;
 import ReactiveUsersMicroservice.utils.exceptions.AlreadyExistException;
 import ReactiveUsersMicroservice.utils.exceptions.InvalidInputException;
@@ -15,12 +12,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Set;
-
 import static ReactiveUsersMicroservice.utils.DepartmentUtils.localDateToFormattedString;
 
 @Service
-public class ReactiveDepartmentService implements DepartmentService{
+public class ReactiveDepartmentService implements DepartmentService {
 
     private ReactiveDepartmentCrud reactiveDepartmentCrud;
     private ReactiveUserCrud reactiveUserCrud;
@@ -29,6 +24,7 @@ public class ReactiveDepartmentService implements DepartmentService{
         this.reactiveDepartmentCrud = reactiveDepartmentCrud;
         this.reactiveUserCrud = reactiveUserCrud;
     }
+
     @Override
     public Mono<DepartmentBoundary> createDepartment(NewDepartmentBoundary newDepartment) {
         isValidDepartment(newDepartment);

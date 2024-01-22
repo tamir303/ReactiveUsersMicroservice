@@ -1,23 +1,19 @@
 package ReactiveUsersMicroservice.logic;
 
-import ReactiveUsersMicroservice.boundaries.DepartmentBoundary;
 import ReactiveUsersMicroservice.boundaries.UserBoundary;
 import ReactiveUsersMicroservice.dal.ReactiveDepartmentCrud;
 import ReactiveUsersMicroservice.dal.ReactiveUserCrud;
-import ReactiveUsersMicroservice.data.DepartmentEntity;
 import ReactiveUsersMicroservice.data.UserEntity;
 import ReactiveUsersMicroservice.utils.CryptoUtils;
-import ReactiveUsersMicroservice.utils.invokers.DepartmentInvoker;
 import ReactiveUsersMicroservice.utils.GeneralUtils;
+import ReactiveUsersMicroservice.utils.UserUtils;
 import ReactiveUsersMicroservice.utils.exceptions.AlreadyExistException;
 import ReactiveUsersMicroservice.utils.exceptions.InvalidInputException;
 import ReactiveUsersMicroservice.utils.exceptions.NotFoundException;
+import ReactiveUsersMicroservice.utils.invokers.DepartmentInvoker;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ReactiveUsersMicroservice.utils.UserUtils;
-
-import java.util.Set;
 
 import static ReactiveUsersMicroservice.utils.Constants.*;
 

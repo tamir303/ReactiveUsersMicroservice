@@ -7,7 +7,10 @@ import reactor.core.publisher.Mono;
 
 public interface DepartmentService {
     public Mono<DepartmentBoundary> createDepartment(NewDepartmentBoundary newDepartment);
+
     public Mono<DepartmentBoundary> getDepartment(String deptId);
+
     public Flux<DepartmentBoundary> getDepartments();
+
     public Mono<Void> deleteAllDepartments();
 }

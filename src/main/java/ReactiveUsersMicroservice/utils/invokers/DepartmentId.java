@@ -7,7 +7,8 @@ public class DepartmentId {
         this.deptId = deptId;
     }
 
-    public DepartmentId(){}
+    public DepartmentId() {
+    }
 
     public String getDeptId() {
         return deptId;

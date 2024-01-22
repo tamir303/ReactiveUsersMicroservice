@@ -7,7 +7,8 @@ public class DepartmentInvoker {
         this.department = department;
     }
 
-    public DepartmentInvoker(){}
+    public DepartmentInvoker() {
+    }
 
     public DepartmentId getDepartment() {
         return department;

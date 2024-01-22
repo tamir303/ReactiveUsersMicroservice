@@ -1,6 +1,7 @@
 # Reactive Users Microservice
 
-This project implements a reactive microservice using Spring Flux to manage user and department data. The microservice provides various operations for creating, retrieving, and managing users and departments.
+This project implements a reactive microservice using Spring Flux to manage user and department data. The microservice
+provides various operations for creating, retrieving, and managing users and departments.
 
 ## User Controller
 
@@ -75,7 +76,8 @@ This reactive action helps test the service by deleting all department data save
 - Incorrect inputs or interface activation will cause operations to return appropriate error codes.
 - The order of users or departments returned in GET operations is not important.
 
-Feel free to explore and contribute to this Spring Flux project. For further details on data structures and operations, please refer to the UserController, DepartmentController classes, and associated documentation.
+Feel free to explore and contribute to this Spring Flux project. For further details on data structures and operations,
+please refer to the UserController, DepartmentController classes, and associated documentation.
 
 ## Getting Started
 

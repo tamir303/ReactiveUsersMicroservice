@@ -1,13 +1,12 @@
 package ReactiveUsersMicroservice.boundaries;
 
-import ReactiveUsersMicroservice.data.DepartmentEntity;
-
 public class NewDepartmentBoundary {
 
     private String deptId;
     private String departmentName;
 
-    public NewDepartmentBoundary(){}
+    public NewDepartmentBoundary() {
+    }
 
     public NewDepartmentBoundary(String deptId, String departmentName) {
         this.deptId = deptId;

@@ -2,7 +2,6 @@ package ReactiveUsersMicroservice.data;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.HashSet;
 import java.util.Objects;
