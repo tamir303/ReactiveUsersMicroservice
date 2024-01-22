@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Document(collection = "users")
@@ -16,14 +17,13 @@ public class UserEntity {
     private String birthdate;
     private String recruitdate;
     private String[] roles;
-    @DocumentReference(lazy = true)
-    private Set<DepartmentEntity> children;
+    private Set<String> childrenIds;
 
     public UserEntity() {
-        this.children = new HashSet<>();
+        this.childrenIds = new HashSet<>();
     }
 
-    public UserEntity(String email, String password, String first, String last, String birthdate, String recruitdate, String[] roles, Set<DepartmentEntity> departmentEntities) {
+    public UserEntity(String email, String password, String first, String last, String birthdate, String recruitdate, String[] roles, Set<String> childrenIds) {
         this.email = email;
         this.password = password;
         this.first = first;
@@ -31,19 +31,19 @@ public class UserEntity {
         this.birthdate = birthdate;
         this.recruitdate = recruitdate;
         this.roles = roles;
-        this.children = departmentEntities;
+        this.childrenIds = childrenIds;
     }
 
-    public void addChild(DepartmentEntity departmentEntity) {
-        this.children.add(departmentEntity);
+    public void addChild(String departmentEntity) {
+        this.childrenIds.add(departmentEntity);
     }
 
-    public Set<DepartmentEntity> getChildren() {
-        return children;
+    public Set<String> getChildren() {
+        return childrenIds;
     }
 
-    public void setChildren(Set<DepartmentEntity> children) {
-        this.children = children;
+    public void setChildren(Set<String> children) {
+        this.childrenIds = children;
     }
 
     public String getEmail() {
@@ -112,6 +112,7 @@ public class UserEntity {
                 ", birthdate='" + birthdate + '\'' +
                 ", recruitdate='" + recruitdate + '\'' +
                 ", roles=" + Arrays.toString(roles) +
+                ", childrenIds=" + childrenIds +
                 '}';
     }
 
@@ -120,11 +121,19 @@ public class UserEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserEntity that = (UserEntity) o;
-        return Objects.equals(email, that.email);
+        return Objects.equals(email, that.email) &&
+                Objects.equals(password, that.password) &&
+                Objects.equals(first, that.first) &&
+                Objects.equals(last, that.last) &&
+                Objects.equals(birthdate, that.birthdate) &&
+                Objects.equals(recruitdate, that.recruitdate) &&
+                Arrays.equals(roles, that.roles) && Objects.equals(childrenIds, that.childrenIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email);
+        int result = Objects.hash(email, password, first, last, birthdate, recruitdate, childrenIds);
+        result = 31 * result + Arrays.hashCode(roles);
+        return result;
     }
 }

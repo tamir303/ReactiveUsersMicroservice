@@ -15,18 +15,18 @@ public class DepartmentEntity {
     private String deptId;
     private String departmentName;
     private String creationDate;
-    @DocumentReference(lazy = true)
-    private Set<UserEntity> parents;
+    private Set<String> parentsIds;
 
-    public DepartmentEntity() {this.parents = new HashSet<>();}
-
-    public DepartmentEntity(String deptId, String departmentName, String creationDate, Set<UserEntity> parents) {
+    public DepartmentEntity(String deptId, String departmentName, String creationDate, Set<String> parentsIds) {
         this.deptId = deptId;
         this.departmentName = departmentName;
         this.creationDate = creationDate;
-        this.parents = parents;
+        this.parentsIds = parentsIds;
     }
 
+    public DepartmentEntity() {
+        this.parentsIds = new HashSet<>();
+    }
 
     public String getDeptId() {
         return deptId;
@@ -52,16 +52,16 @@ public class DepartmentEntity {
         this.creationDate = creationDate;
     }
 
-    public Set<UserEntity> getParents() {
-        return parents;
+    public Set<String> getParents() {
+        return parentsIds;
     }
 
-    public void setParents(Set<UserEntity> parents) {
-        this.parents = parents;
+    public void setParents(Set<String> parents) {
+        this.parentsIds = parents;
     }
 
-    public void addParent(UserEntity userEntity) {
-        this.parents.add(userEntity);
+    public void addParent(String userId) {
+        this.parentsIds.add(userId);
     }
 
     @Override
@@ -70,6 +70,7 @@ public class DepartmentEntity {
                 "deptId='" + deptId + '\'' +
                 ", departmentName='" + departmentName + '\'' +
                 ", creationDate='" + creationDate + '\'' +
+                ", parents=" + parentsIds +
                 '}';
     }
 
@@ -78,12 +79,15 @@ public class DepartmentEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DepartmentEntity that = (DepartmentEntity) o;
-        return Objects.equals(deptId, that.deptId);
+        return Objects.equals(deptId, that.deptId) &&
+                Objects.equals(departmentName, that.departmentName) &&
+                Objects.equals(creationDate, that.creationDate) &&
+                Objects.equals(parentsIds, that.parentsIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deptId);
+        return Objects.hash(deptId, departmentName, creationDate, parentsIds);
     }
 }
 

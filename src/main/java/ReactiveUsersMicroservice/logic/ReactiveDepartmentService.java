@@ -72,11 +72,13 @@ public class ReactiveDepartmentService implements DepartmentService{
         return reactiveDepartmentCrud
                 .findAll()
                 .flatMap(department -> {
-                    // Remove the department from all users in which he is a child
-                    Set<UserEntity> parents = department.getParents();
-                    return Flux.fromIterable(parents)
-                            .doOnNext(user -> user.getChildren().remove(department))
-                            .flatMap(reactiveUserCrud::save);
+                    return Flux.fromIterable(department.getParents())
+                            .flatMap(reactiveUserCrud::findById)
+                            .flatMap(user -> {
+                                user.getChildren().remove(department.getDeptId());
+                                return reactiveUserCrud.save(user);
+                            })
+                            .then();
                 })
                 .then(reactiveDepartmentCrud.deleteAll());
     }

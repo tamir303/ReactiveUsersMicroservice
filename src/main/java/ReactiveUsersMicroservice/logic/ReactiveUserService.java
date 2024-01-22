@@ -125,15 +125,16 @@ public class ReactiveUserService implements UserService {
         return reactiveUserCrud
                 .findAll()
                 .flatMap(user -> {
-                    // Remove the user from all departments in which he is a parent
-                    Set<DepartmentEntity> children = user.getChildren();
-                    return Flux.fromIterable(children)
-                            .doOnNext(department -> department.getParents().remove(user))
-                            .flatMap(reactiveDepartmentCrud::save);
+                    return Flux.fromIterable(user.getChildren())
+                            .flatMap(reactiveDepartmentCrud::findById)
+                            .flatMap(department -> {
+                                department.getParents().remove(user.getEmail());
+                                return reactiveDepartmentCrud.save(department);
+                            })
+                            .then();
                 })
                 .then(reactiveUserCrud.deleteAll());
     }
-
 
     @Override
     public Mono<Void> bindUserToDepartment(String email, DepartmentInvoker departmentInvoker) {
@@ -141,8 +142,8 @@ public class ReactiveUserService implements UserService {
                 .switchIfEmpty(Mono.error(new NotFoundException("User with email: " + email + " does not exist")))
                 .flatMap(existedUser -> reactiveDepartmentCrud.findById(departmentInvoker.getDepartment().getDeptId())
                         .flatMap(foundDepartment -> {
-                            existedUser.addChild(foundDepartment);
-                            foundDepartment.addParent(existedUser);
+                            existedUser.addChild(foundDepartment.getDeptId());
+                            foundDepartment.addParent(existedUser.getEmail());
                             return reactiveUserCrud.save(existedUser).then(reactiveDepartmentCrud.save(foundDepartment));
                         })).then();
     }
